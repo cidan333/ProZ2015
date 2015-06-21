@@ -1,5 +1,12 @@
-import java.util.ArrayList;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import Chess.Database;
 import Chess.MainFrame;
 import Chess.Partia;
@@ -7,17 +14,47 @@ import Chess.Turniej;
 import Chess.Zawodnik;
 
 
+
 public class Main {
 	
-	public static void main(String[] args) 
-	{
-		MainFrame mainFrame = new MainFrame(); 
-		mainFrame.setVisible(true);
+	public static void main(String[] args) throws FileNotFoundException, IOException 
+	{		
+		Runnable r = new Runnable() {
+
+
+            public void run() {
+                MainFrame cb = null ;
+                try {
+                    cb = new MainFrame();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                JFrame f = new JFrame("ChessChamp");
+                
+                f.add(cb.getGui());                
+                f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                f.setLocationByPlatform(true);
+
+                f.pack();
+
+                f.setMinimumSize(f.getSize());
+                //f.setSize(1500,1000);
+                f.setVisible(true);
+                
+                
+                
+            }
+        };
+        SwingUtilities.invokeLater(r);
+    
 		
 		try 
 		{
 			Database database  = new Database("localhost", "projekt", "root", "");
-			//database.parse("GigaBaza.pgn");
+			//database.parse("../GigaBaza.pgn");
 			
 			// test szukania turniejow
 			ArrayList<Turniej> turnieje = database.searchTournament("MPJ 2009 C10", "leba", null).getList();
@@ -42,7 +79,7 @@ public class Main {
 			
 			for ( Partia p : partie )
 			{
-				System.out.println(p.getRuchyBialego());
+				System.out.println(p.getRuchy());
 			}
 			
 			// zamykamy polaczenie z baza

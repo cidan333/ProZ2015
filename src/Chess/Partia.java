@@ -2,25 +2,28 @@ package Chess;
 
 public class Partia {
 	private int id;
+	private int idTurnieju;
 	private int idBialego;
 	private int idCzarnego;
-	private double runda;
+	private String runda;
 	private String kodDebiutowy;
-	private String komentator;
-	private String ruchyBialego;
-	private String ruchyCzarnego;
-	
-	public Partia(int id, int idBialego, int idCzarnego, double runda,
-			String kodDebiutowy, String ruchyBialego,
-			String ruchyCzarnego) {
+	private String ruchy;
+	private boolean kWiezowa;
+	private int liczbaFigurNaKoniec;
+
+	public Partia(int id, int idTurnieju, int idBialego, int idCzarnego,
+			String runda, String kodDebiutowy, String ruchy, boolean kWiezowa,
+			int liczbaFigurNaKoniec) {
 		super();
 		this.id = id;
+		this.idTurnieju = idTurnieju;
 		this.idBialego = idBialego;
 		this.idCzarnego = idCzarnego;
 		this.runda = runda;
 		this.kodDebiutowy = kodDebiutowy;
-		this.ruchyBialego = ruchyBialego;
-		this.ruchyCzarnego = ruchyCzarnego;
+		this.ruchy = ruchy;
+		this.kWiezowa = kWiezowa;
+		this.liczbaFigurNaKoniec = liczbaFigurNaKoniec;
 	}
 
 	public Partia() {
@@ -28,6 +31,14 @@ public class Partia {
 
 	public int getId() {
 		return id;
+	}
+
+	public int getIdTurnieju() {
+		return idTurnieju;
+	}
+
+	public void setIdTurnieju(int idTurnieju) {
+		this.idTurnieju = idTurnieju;
 	}
 
 	public void setId(int id) {
@@ -50,11 +61,11 @@ public class Partia {
 		this.idCzarnego = idCzarnego;
 	}
 
-	public double getRunda() {
+	public String getRunda() {
 		return runda;
 	}
 
-	public void setRunda(double runda) {
+	public void setRunda(String runda) {
 		this.runda = runda;
 	}
 
@@ -66,31 +77,37 @@ public class Partia {
 		this.kodDebiutowy = kodDebiutowy;
 	}
 
-	public String getKomentator() {
-		return komentator;
+	public String getRuchy() {
+		return ruchy;
 	}
 
-	public void setKomentator(String komentator) {
-		this.komentator = komentator;
+	public void setRuchy(String ruchy) {
+		this.ruchy = ruchy;
 	}
 
-	public String getRuchyBialego() {
-		return ruchyBialego;
+	public boolean getkWiezowa() {
+		return kWiezowa;
 	}
 
-	public void setRuchyBialego(String ruchyBialego) {
-		this.ruchyBialego = ruchyBialego;
+	public void setkWiezowa(boolean kWiezowa) {
+		this.kWiezowa = kWiezowa;
 	}
 
-	public String getRuchyCzarnego() {
-		return ruchyCzarnego;
+	public int getLiczbaFigurNaKoniec() {
+		return liczbaFigurNaKoniec;
 	}
 
-	public void setRuchyCzarnego(String ruchyCzarnego) {
-		this.ruchyCzarnego = ruchyCzarnego;
+	public void setLiczbaFigurNaKoniec(int liczbaFigurNaKoniec) {
+		this.liczbaFigurNaKoniec = liczbaFigurNaKoniec;
 	}
-	
-	
-	
-	
+
+	@Override
+	public String toString() {
+		return "Partia [id=" + id + ", idTurnieju=" + idTurnieju
+				+ ", idBialego=" + idBialego + ", idCzarnego=" + idCzarnego
+				+ ", runda=" + runda + ", kodDebiutowy=" + kodDebiutowy
+				+ ", ruchy=" + ruchy + ", kWiezowa=" + kWiezowa
+				+ ", liczbaFigurNaKoniec=" + liczbaFigurNaKoniec + "]";
+	}
+
 }

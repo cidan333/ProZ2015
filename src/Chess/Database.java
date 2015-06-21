@@ -84,14 +84,17 @@ public class Database
 			
 			while ( rs.next() )
 			{
+				
 				partie.add(new Partia(
 							rs.getInt("partiaid"),
+							rs.getInt("turniejid"),
 							rs.getInt("bialyid"), 
 							rs.getInt("czarnyid"), 
-							rs.getDouble("RUNDA"),
+							rs.getString("RUNDA"),
 							rs.getString("DEBIUT"), 
-							rs.getString("RUCHYBIALEGO"),
-							rs.getString("RUCHYCZARNEGO")					
+							rs.getString("ruchy"),
+							rs.getBoolean("kWiezowa"), 
+							rs.getInt("liczbaFigurNaKoniec")
 						 ));
 			}
 			
@@ -197,9 +200,7 @@ public class Database
 		}
 	}
 	
-	
-	public void parse(String filepath)
-	{
+	public void parse(String filepath) {
 		// listy z danymi
 		ListaZawodnikow zawodnicy = new ListaZawodnikow();
 		ListaTurniejow turnieje = new ListaTurniejow();
@@ -318,40 +319,128 @@ public class Database
 						break;
 					}
 			}
+
+			// WCZYTANIE PARTII
+			// zmienne
+			int idP = 0;
+			int idTurnieju = 0;
+			int idBialego = 0;
+			int idCzarnego = 0;
+			String runda = new String();
+			String kodDebiutowy = new String();
+			String ruchy = new String();
+
+			fin.getChannel().position(0);
+			inbr = new BufferedReader(new InputStreamReader(fin));
+			while ((line = inbr.readLine()) != null) {
+				if (line.length() > 6)
+					switch (line.substring(0, 7)) {
+					case "[Event ": {
+						wynik = line.split("\"");
+						nazwa = wynik[1].replace("'", " ");
+						idTurnieju = turnieje.returnID(nazwa);
+					}
+						break;
+					case "[White ": {
+						wynik = line.split("\"");
+						imieNazwisko = wynik[1].replace("'", " ");
+						wynik = imieNazwisko.split(", ");
+						if (wynik.length < 2)
+							wynik = imieNazwisko.split(" ");
+						if (wynik.length != 1)
+							imie = wynik[1];
+						nazwisko = wynik[0];
+						idBialego = zawodnicy.returnID(imie, nazwisko);
+					}
+						break;
+					case "[Black ": {
+						wynik = line.split("\"");
+						imieNazwisko = wynik[1].replace("'", " ");
+						wynik = imieNazwisko.split(", ");
+						if (wynik.length < 2)
+							wynik = imieNazwisko.split(" ");
+						if (wynik.length != 1)
+							imie = wynik[1];
+						nazwisko = wynik[0];
+						idCzarnego = zawodnicy.returnID(imie, nazwisko);
+					}
+						break;
+					case "[Round ": {
+						wynik = line.split("\"");
+						runda = wynik[1];
+					}
+						break;
+					case "[ECO \"A":
+					case "[ECO \"B":
+					case "[ECO \"C":
+					case "[ECO \"D":
+					case "[ECO \"E": {
+						wynik = line.split("\"");
+						kodDebiutowy = wynik[1];
+					}
+						break;
+					}
+				if (line.length() > 1 && line.substring(0, 2).equals("1.")) {
+					ruchy = ruchy.concat(line);
+					while ((line = inbr.readLine()).length() > 1) {
+						ruchy = ruchy.concat(line);
+					}
+					partie.add(new Partia(idP, idTurnieju, idBialego,
+							idCzarnego, runda, kodDebiutowy, ruchy, true, 99));
+					ruchy = "";
+					idP++;
+				}
+			}
 		} catch (IOException e) {
 			System.out.println("Input/output error.");
 		}
-		
-		if(connection == null){
+
+		if (connection == null) {
 			System.exit(-1);
 		}
 		System.out.println("Po³¹czenie z baz¹ danych otwarte!");
-		
-		//zapis zawodnikow i turniejow do bazy
-		try{
+
+		// zapis zawodnikow i turniejow do bazy
+		try {
 			String query = new String();
 			Statement stm = (Statement) connection.createStatement();
 			stm.executeUpdate("use projekt;");
 			stm.executeUpdate("delete from zawodnicy;");
 			stm.executeUpdate("delete from turnieje;");
-			for(Zawodnik z : zawodnicy.getList()){
-				query = "INSERT INTO Zawodnicy VALUES(" + z.getId() + ",'" + z.getImie() + "','" + z.getNazwisko() + "'," + z.getRanking() + ");";
+			for (Zawodnik z : zawodnicy.getList()) {
+				query = "INSERT INTO Zawodnicy VALUES(" + z.getId() + ",'"
+						+ z.getImie() + "','" + z.getNazwisko() + "',"
+						+ z.getRanking() + ");";
 				System.out.println(query);
 				stm.executeUpdate(query);
 			}
-			for(Turniej t : turnieje.getList()){
-				query = "INSERT INTO Turnieje VALUES(" + t.getId() + ",'" + t.getNazwa() + "','" + t.getMiejscowosc() + "','" + t.getData() + "')";
+			for (Turniej t : turnieje.getList()) {
+				query = "INSERT INTO Turnieje VALUES(" + t.getId() + ",'"
+						+ t.getNazwa() + "','" + t.getMiejscowosc() + "','"
+						+ t.getData() + "')";
 				System.out.println(query);
 				stm.executeUpdate(query);
 			}
-		}catch(SQLException e){
+			int myIntKWiezowa;
+			for (Partia p : partie.getList()) {
+				myIntKWiezowa = (p.getkWiezowa()) ? 1 : 0;
+				query = "INSERT INTO Partie VALUES(" + p.getId() + ",'"
+						+ p.getIdTurnieju() + "','" + p.getIdBialego() + "','"
+						+ p.getIdCzarnego() + "','" + p.getRunda() + "','"
+						+ p.getKodDebiutowy() + "','" + p.getRuchy() + "','"
+						+ myIntKWiezowa + "','" + p.getLiczbaFigurNaKoniec()
+						+ "')";
+				System.out.println(query);
+				stm.executeUpdate(query);
+			}
+		} catch (SQLException e) {
 			System.out.println("Blad przy dodawaniu rekrodow: " + e.toString());
 		}
-		
-		//zamkniecie polaczenia z baza danych
-		try{
+
+		// zamkniecie polaczenia z baza danych
+		try {
 			connection.close();
-		}catch(SQLException e){
+		} catch (SQLException e) {
 			System.err.println("B³¹d przy zamykaniu po³¹czenia: " + e);
 			System.exit(-1);
 		}
